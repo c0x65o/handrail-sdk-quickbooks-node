@@ -163,6 +163,28 @@ export type HandrailQuickBooksRawImportObjectType =
   | "Vendor"
   | "VendorCredit";
 
+export type HandrailQuickBooksProviderDispositionKind = "skipped" | "voided";
+
+export type HandrailQuickBooksProviderDispositionReason =
+  | "zero_cash_deposit_vendor_credit_offset"
+  | "zero_effect_empty_payment"
+  | "zero_effect_voided";
+
+/**
+ * A provider-asserted per-record outcome whose source object remains available
+ * through an immutable raw-payload reference. Consumers must not infer a
+ * disposition from an object ID or from an absent/unknown record.
+ */
+export interface HandrailQuickBooksProviderDisposition {
+  readonly disposition: HandrailQuickBooksProviderDispositionKind;
+  readonly reason: HandrailQuickBooksProviderDispositionReason;
+  readonly providerObjectType: HandrailQuickBooksRawImportObjectType;
+  readonly providerObjectId: string;
+  readonly rawPayloadProvenance: {
+    readonly sourcePayloadRef: string;
+  };
+}
+
 export interface HandrailQuickBooksAuditReference {
   readonly checkpointId?: string;
   readonly importBatchId?: string;
@@ -339,6 +361,7 @@ export interface HandrailQuickBooksSyncJobSummary {
   readonly completedAt?: string;
   readonly retry?: HandrailQuickBooksRetryState;
   readonly audit: HandrailQuickBooksAuditReference;
+  readonly providerDispositions?: readonly HandrailQuickBooksProviderDisposition[];
   readonly normalizationWarnings?: readonly HandrailQuickBooksNormalizationWarning[];
 }
 
@@ -392,6 +415,7 @@ export interface NormalizedQuickBooksSyncResponseEnvelopeBase {
   readonly importBatch?: HandrailQuickBooksImportBatchSummary;
   readonly checkpoint?: HandrailQuickBooksSyncCheckpointMetadata;
   readonly audit: HandrailQuickBooksAuditReference;
+  readonly providerDispositions?: readonly HandrailQuickBooksProviderDisposition[];
   readonly normalizationWarnings?: readonly HandrailQuickBooksNormalizationWarning[];
 }
 

@@ -7,6 +7,17 @@
   "status": "succeeded",
   "syncMode": "incremental",
   "syncPhase": "delta_sync",
+  "providerDispositions": [
+    {
+      "disposition": "skipped",
+      "reason": "zero_effect_empty_payment",
+      "providerObjectType": "Payment",
+      "providerObjectId": "-9007199254740993",
+      "rawPayloadProvenance": {
+        "sourcePayloadRef": "raw://batch_contract_2026_05/objects/Payment/-9007199254740993"
+      }
+    }
+  ],
   "deltaCounts": {
     "changedCount": 1,
     "failedCount": 0,

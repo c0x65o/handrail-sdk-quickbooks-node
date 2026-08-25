@@ -37,8 +37,12 @@ import {
   HandrailQuickBooksParty,
   HandrailQuickBooksPartyListResponse,
   HandrailQuickBooksProviderEnvironment,
+  HandrailQuickBooksProviderDisposition,
+  HandrailQuickBooksProviderDispositionKind,
+  HandrailQuickBooksProviderDispositionReason,
   HandrailQuickBooksProviderMode,
   HandrailQuickBooksProviderPagingEvidence,
+  HandrailQuickBooksRawImportObjectType,
   HandrailQuickBooksRawImportStatus,
   HandrailQuickBooksRawImportStatusListResponse,
   HandrailQuickBooksReportedProviderMode,
@@ -69,6 +73,87 @@ import {
   SearchTransactionLinesRequest,
   ListTransactionsRequest
 } from "@handrail/quickbooks-node-sdk";
+
+const providerObjectTypeLabels = {
+  Account: "Account",
+  Bill: "Bill",
+  BillPayment: "Bill payment",
+  Class: "Class",
+  CreditMemo: "Credit memo",
+  Customer: "Customer",
+  Department: "Department",
+  Deposit: "Deposit",
+  Invoice: "Invoice",
+  Item: "Item",
+  JournalEntry: "Journal entry",
+  Payment: "Payment",
+  Purchase: "Purchase",
+  RefundReceipt: "Refund receipt",
+  SalesReceipt: "Sales receipt",
+  TaxAgency: "Tax agency",
+  TaxCode: "Tax code",
+  TaxRate: "Tax rate",
+  Transfer: "Transfer",
+  Vendor: "Vendor",
+  VendorCredit: "Vendor credit"
+} satisfies Record<HandrailQuickBooksRawImportObjectType, string>;
+
+function readDispositionKind(value: HandrailQuickBooksProviderDispositionKind) {
+  switch (value) {
+    case "skipped":
+      return "Skipped";
+    case "voided":
+      return "Voided";
+    default:
+      return assertNever(value);
+  }
+}
+
+function readDispositionReason(value: HandrailQuickBooksProviderDispositionReason) {
+  switch (value) {
+    case "zero_cash_deposit_vendor_credit_offset":
+      return "Zero-cash deposit/vendor-credit offset";
+    case "zero_effect_empty_payment":
+      return "Empty zero-effect payment";
+    case "zero_effect_voided":
+      return "Provider-voided zero-effect object";
+    default:
+      return assertNever(value);
+  }
+}
+
+function assertNever(value: never): never {
+  throw new Error(`Unhandled provider contract value: ${String(value)}`);
+}
+
+const providerDispositions = [
+  {
+    disposition: "skipped",
+    providerObjectId: "credit-application:VendorCredit:arbitrary/-42",
+    providerObjectType: "BillPayment",
+    rawPayloadProvenance: {
+      sourcePayloadRef: "raw://batch_123/objects/BillPayment/credit-application-arbitrary-42"
+    },
+    reason: "zero_cash_deposit_vendor_credit_offset"
+  },
+  {
+    disposition: "voided",
+    providerObjectId: "purchase:voided:alpha/beta",
+    providerObjectType: "Purchase",
+    rawPayloadProvenance: {
+      sourcePayloadRef: "raw://batch_123/objects/Purchase/purchase-voided-alpha-beta"
+    },
+    reason: "zero_effect_voided"
+  }
+] as const satisfies readonly HandrailQuickBooksProviderDisposition[];
+
+const providerDispositionReadModel = providerDispositions.map((providerDisposition) => ({
+  disposition: readDispositionKind(providerDisposition.disposition),
+  providerObjectId: providerDisposition.providerObjectId,
+  providerObjectType: providerObjectTypeLabels[providerDisposition.providerObjectType],
+  rawPayloadRef: providerDisposition.rawPayloadProvenance.sourcePayloadRef,
+  reason: readDispositionReason(providerDisposition.reason)
+}));
 
 const config: HandrailQuickBooksSdkConfigInput = {
   auth: {
@@ -371,6 +456,7 @@ const syncJob: HandrailQuickBooksSyncJobSummary = {
   normalizedCompleteness,
   objectCount: 2,
   objectType: "Account",
+  providerDispositions,
   retry,
   startedAt: "2026-05-31T00:00:00.000Z",
   status: "succeeded",
@@ -408,6 +494,7 @@ const fullSyncEnvelope: NormalizedQuickBooksFullSyncResponseEnvelope = {
   },
   normalizedCompleteness,
   normalizedResources: normalizedResourceMap,
+  providerDispositions,
   status: "succeeded",
   syncJob: {
     ...syncJob,
@@ -441,6 +528,7 @@ const incrementalSyncEnvelope: NormalizedQuickBooksIncrementalSyncResponseEnvelo
     transactions: [transaction],
     transaction_lines: [transactionLine]
   },
+  providerDispositions,
   status: "succeeded",
   syncJob,
   syncMode: "incremental",
@@ -562,6 +650,7 @@ void [
   incrementalSyncEnvelope,
   normalizedResourceMap,
   requestOptions,
+  providerDispositionReadModel,
   config,
   futureErpConfig,
   resolvedFutureErpTenantId,

@@ -80,7 +80,7 @@ export async function runCli(argv: readonly string[], options: RunCliOptions = {
     };
 
     const result = await command.run(context);
-    stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+    stdout.write(`${JSON.stringify(sanitizeCliOutput(result), null, 2)}\n`);
     return 0;
   } catch (error) {
     stderr.write(`${formatCliError(error)}\n`);
@@ -173,6 +173,61 @@ function formatCliError(error: unknown) {
   }
 
   return "Handrail QuickBooks CLI failed.";
+}
+
+const UNSAFE_CLI_OUTPUT_KEYS = new Set([
+  "accesstoken",
+  "apikey",
+  "authorization",
+  "clientid",
+  "clientsecret",
+  "credential",
+  "credentials",
+  "oauthcredentials",
+  "payload",
+  "providererror",
+  "queryresponse",
+  "rawobject",
+  "rawpayload",
+  "rawprovidererror",
+  "rawproviderpayload",
+  "rawquickbooksobject",
+  "refreshtoken",
+  "token"
+]);
+
+const SAFE_PAYLOAD_REFERENCE_KEYS = new Set([
+  "rawpayloadprovenance",
+  "sourcepayloadref",
+  "sourcepayloadrefs"
+]);
+
+function sanitizeCliOutput(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(sanitizeCliOutput);
+  }
+  if (value === null || typeof value !== "object") {
+    return value;
+  }
+
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter(([key]) => !isUnsafeCliOutputKey(key))
+      .map(([key, entry]) => [key, sanitizeCliOutput(entry)])
+  );
+}
+
+function isUnsafeCliOutputKey(key: string) {
+  const normalizedKey = key.replace(/[^a-z0-9]/gi, "").toLowerCase();
+  if (SAFE_PAYLOAD_REFERENCE_KEYS.has(normalizedKey)) {
+    return false;
+  }
+  return UNSAFE_CLI_OUTPUT_KEYS.has(normalizedKey) ||
+    normalizedKey.includes("credential") ||
+    normalizedKey.includes("payload") ||
+    normalizedKey.includes("secret") ||
+    normalizedKey.endsWith("token") ||
+    normalizedKey.endsWith("tokens");
 }
 
 export { commands };

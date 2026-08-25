@@ -7,6 +7,26 @@
   "status": "succeeded",
   "syncMode": "full",
   "syncPhase": "initial_load",
+  "providerDispositions": [
+    {
+      "disposition": "skipped",
+      "reason": "zero_cash_deposit_vendor_credit_offset",
+      "providerObjectType": "BillPayment",
+      "providerObjectId": "credit-application:VendorCredit:arbitrary/-42",
+      "rawPayloadProvenance": {
+        "sourcePayloadRef": "raw://batch_contract_2026_05/objects/BillPayment/credit-application-arbitrary-42"
+      }
+    },
+    {
+      "disposition": "voided",
+      "reason": "zero_effect_voided",
+      "providerObjectType": "Purchase",
+      "providerObjectId": "purchase:voided:alpha/beta",
+      "rawPayloadProvenance": {
+        "sourcePayloadRef": "raw://batch_contract_2026_05/objects/Purchase/purchase-voided-alpha-beta"
+      }
+    }
+  ],
   "deltaCounts": {
     "changedCount": 0,
     "failedCount": 0,

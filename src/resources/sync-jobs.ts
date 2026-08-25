@@ -120,6 +120,9 @@ function toNormalizedQuickBooksSyncResponseEnvelopeBase(syncJob: HandrailQuickBo
     // returned resource row counts under this normalized name.
     normalizedResourceCounts,
     normalizedResources: normalizeQuickBooksAccountResources(syncJob.normalizedResources),
+    ...(syncJob.providerDispositions === undefined || syncJob.providerDispositions.length === 0
+      ? {}
+      : { providerDispositions: syncJob.providerDispositions }),
     ...(syncJob.normalizationWarnings === undefined || syncJob.normalizationWarnings.length === 0
       ? {}
       : { normalizationWarnings: syncJob.normalizationWarnings }),

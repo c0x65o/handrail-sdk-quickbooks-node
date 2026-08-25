@@ -613,6 +613,61 @@ describe("handrail-qbo CLI", () => {
     );
   });
 
+  it("prints disposition provenance while removing raw payload and credential material", async () => {
+    const stdout = new StringWriter();
+    const client = createMockClient();
+    vi.mocked(client.syncJobs.start).mockResolvedValueOnce({
+      ...contractResponses.syncJob,
+      authorization: "Bearer do-not-print",
+      credentials: {
+        access_token: "stored-access-token",
+        clientSecret: "do-not-print"
+      },
+      providerDispositions: [
+        {
+          disposition: "skipped",
+          providerObjectId: "credit-application:arbitrary/-42",
+          providerObjectType: "BillPayment",
+          rawPayloadProvenance: {
+            sourcePayloadRef: "raw://batch_contract_2026_05/objects/BillPayment/arbitrary-42"
+          },
+          reason: "zero_cash_deposit_vendor_credit_offset"
+        }
+      ],
+      providerPayloadBody: {
+        BillPayment: [{ Id: "credit-application:arbitrary/-42" }]
+      },
+      rawPayload: {
+        QueryResponse: {
+          BillPayment: [{ Id: "credit-application:arbitrary/-42" }]
+        }
+      }
+    });
+
+    const exitCode = await runCli(["sync", "--mode", "incremental"], {
+      createClient: () => client,
+      env: requiredEnv(),
+      stdout
+    });
+
+    expect(exitCode).toBe(0);
+    expect(JSON.parse(stdout.value)).toMatchObject({
+      providerDispositions: [
+        {
+          disposition: "skipped",
+          providerObjectId: "credit-application:arbitrary/-42",
+          rawPayloadProvenance: {
+            sourcePayloadRef: "raw://batch_contract_2026_05/objects/BillPayment/arbitrary-42"
+          },
+          reason: "zero_cash_deposit_vendor_credit_offset"
+        }
+      ]
+    });
+    expect(stdout.value).not.toMatch(
+      /"access_token"|"credentials"|"clientSecret"|"Authorization"|"authorization"|"providerPayloadBody"|"rawPayload"|"QueryResponse"|stored-access-token|do-not-print/
+    );
+  });
+
   it("formats service errors with safe diagnostics only", async () => {
     const stdout = new StringWriter();
     const stderr = new StringWriter();
