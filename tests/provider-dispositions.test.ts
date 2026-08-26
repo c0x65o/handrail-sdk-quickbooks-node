@@ -37,6 +37,15 @@ const providerDispositions = [
     rawPayloadProvenance: {
       sourcePayloadRef: "raw://batch_provider_contract/objects/Purchase/purchase%3Avoided%3Aalpha%2Fbeta%3Frevision%3D7"
     }
+  },
+  {
+    disposition: "skipped",
+    reason: "zero_effect_empty_transaction",
+    providerObjectType: "Invoice",
+    providerObjectId: "invoice:empty/arbitrary-1048",
+    rawPayloadProvenance: {
+      sourcePayloadRef: "raw://batch_provider_contract/objects/Invoice/invoice%3Aempty%2Farbitrary-1048"
+    }
   }
 ] as const satisfies readonly HandrailQuickBooksProviderDisposition[];
 
@@ -141,15 +150,15 @@ function createSyncJob(
     entity: "transactions",
     importBatchId: "batch_provider_contract",
     importVolume: {
-      entityCounts: { transactions: 3 },
+      entityCounts: { transactions: 4 },
       errorCount: 0,
-      objectCount: 3,
-      objectCounts: { BillPayment: 1, Payment: 1, Purchase: 1 },
-      totalObjectCount: 3,
+      objectCount: 4,
+      objectCounts: { BillPayment: 1, Invoice: 1, Payment: 1, Purchase: 1 },
+      totalObjectCount: 4,
       warningCount: 0
     },
     jobId: "job_provider_contract",
-    objectCount: 3,
+    objectCount: 4,
     objectType: "Payment",
     ...(dispositions === undefined ? {} : { providerDispositions: dispositions }),
     startedAt: "2026-08-25T00:00:00.000Z",

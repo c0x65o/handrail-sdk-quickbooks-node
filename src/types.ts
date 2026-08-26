@@ -168,6 +168,7 @@ export type HandrailQuickBooksProviderDispositionKind = "skipped" | "voided";
 export type HandrailQuickBooksProviderDispositionReason =
   | "zero_cash_deposit_vendor_credit_offset"
   | "zero_effect_empty_payment"
+  | "zero_effect_empty_transaction"
   | "zero_effect_voided";
 
 /**
