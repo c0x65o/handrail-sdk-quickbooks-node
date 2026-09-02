@@ -161,6 +161,47 @@ const items = await quickBooks.items.list({ active: true });
 const classes = await quickBooks.classes.list({ active: true });
 const locations = await quickBooks.locations.list({ active: true });
 const checkpoint = await quickBooks.checkpoints.get("quickbooks_incremental_accounts_Account");
+
+const cashMapping = await quickBooks.accounts.mapOrCreate({
+  sourceRef: {
+    sourceSystem: "hitcents_erp",
+    sourceEntityType: "ledger_account",
+    sourceEntityId: "cash"
+  },
+  account: {
+    name: "Operating Cash",
+    accountType: "Bank",
+    accountSubType: "Checking"
+  }
+}, { idempotencyKey: "account:cash:v1:4d9f" });
+
+const postedJournal = await quickBooks.journalEntries.sync({
+  sourceRef: {
+    sourceSystem: "hitcents_erp",
+    sourceEntityType: "journal_entry",
+    sourceEntityId: "journal-1001"
+  },
+  postingDate: "2026-08-22",
+  documentNumber: "JE-1001",
+  lines: [
+    {
+      lineId: "debit-cash",
+      postingType: "Debit",
+      amount: "125.00",
+      accountSourceRef: cashMapping.sourceRef
+    },
+    {
+      lineId: "credit-revenue",
+      postingType: "Credit",
+      amount: "125.00",
+      accountSourceRef: {
+        sourceSystem: "hitcents_erp",
+        sourceEntityType: "ledger_account",
+        sourceEntityId: "revenue"
+      }
+    }
+  ]
+}, { idempotencyKey: "journal:journal-1001:v1:91a2" });
 ```
 
 The public surface exposes stable Handrail business concepts through resource modules:
@@ -172,7 +213,8 @@ The public surface exposes stable Handrail business concepts through resource mo
 - `rawImports.status()` and `rawImports.list()`
 - `importBatches.get()` and `importBatches.list()`
 - `checkpoints.get()` and `checkpoints.list()`
-- `accounts.list()` and `accounts.get()`
+- `accounts.list()`, `accounts.get()`, and `accounts.mapOrCreate()`
+- `journalEntries.sync()`
 - `items.list()` and `items.get()`
 - `classes.list()` and `classes.get()`
 - `locations.list()` and `locations.get()`
@@ -237,6 +279,39 @@ Raw import and sync job responses may include a `retry` object with `retryable`,
 
 Stable namespaces are the SDK compatibility surface. Method names, request/response shapes, normalized business identifiers, source refs, and checkpoint refs should change only through versioned updates. Bounded audit fields may help support teams correlate central-service state with QuickBooks objects, but product workflows should not depend on raw Intuit payload structure.
 
+## Outbound Journal Contract (v0.2.0)
+
+The exact public method signatures are:
+
+```ts
+accounts.mapOrCreate(
+  request: HandrailQuickBooksAccountMapOrCreateRequest,
+  options: HandrailQuickBooksMutationOptions
+): Promise<HandrailQuickBooksAccountMappingResult>;
+
+journalEntries.sync(
+  request: HandrailQuickBooksJournalEntrySyncRequest,
+  options: HandrailQuickBooksMutationOptions
+): Promise<HandrailQuickBooksJournalEntrySyncResult>;
+```
+
+`HandrailQuickBooksMutationOptions` requires `idempotencyKey: string` and optionally accepts
+`signal: AbortSignal`. The same key and normalized request deterministically replay the stored
+result. Reusing a key for different facts fails with `idempotency_key_conflict`.
+
+Call `accounts.mapOrCreate()` once for each journal-line account source reference before calling
+`journalEntries.sync()`. Account and journal requests contain only normalized names, account
+classification facts, positive decimal amounts, debit/credit direction, posting date, and safe
+`{ sourceSystem, sourceEntityType, sourceEntityId }` references. They do not accept provider IDs,
+OAuth tokens, client secrets, raw provider bodies, or Authorization data. Journal entries must
+have at least two unique lines and equal debit and credit totals; local/service validation returns
+a normalized error such as `journal_entry_not_balanced` before any QuickBooks write.
+
+Successful results expose only the service tenant id, safe source reference, provider environment,
+QuickBooks account or journal-entry ID, mapping/sync status, idempotency status, and sync timestamp.
+The central service retains Intuit tokens, refresh behavior, provider sync tokens, and raw success
+or failure bodies.
+
 ## ERP Contract Exports
 
 ERP Financials and Future ERP should import from the package root, `@handrail/quickbooks-node-sdk`.
@@ -249,6 +324,8 @@ The package currently publishes one export path, `"."`, backed by `dist/index.js
 | Connection/token status | `connections.status()`, `connections.tokenStatus()`, `ConnectionsResource`, `HandrailQuickBooksConnectionStatusResponse`, `HandrailQuickBooksTokenStatusResponse` | `GET /v1/tenants/:tenantId/quickbooks/connections/status`, `GET /v1/tenants/:tenantId/quickbooks/connections/token-status` |
 | Full/incremental sync | `fullSync()`, `incrementalSync()`, `syncJobs.fullSync()`, `syncJobs.incrementalSync()`, `syncJobs.start()`, `syncJobs.get()`, `syncJobs.list()`, `SyncJobsResource`, `HandrailQuickBooksStartSyncRequest`, `NormalizedQuickBooksFullSyncRequest`, `NormalizedQuickBooksIncrementalSyncRequest`, `NormalizedQuickBooksFullSyncResponseEnvelope`, `NormalizedQuickBooksIncrementalSyncResponseEnvelope`, `NormalizedQuickBooksSyncResponseEnvelopeBase`, `HandrailQuickBooksNormalizedCompletenessMap`, `HandrailQuickBooksNormalizedResourceCompleteness`, `HandrailQuickBooksSyncJobSummary`, `HandrailQuickBooksSyncJobListResponse` | `POST /v1/tenants/:tenantId/quickbooks/sync-jobs`, `GET /v1/tenants/:tenantId/quickbooks/sync-jobs/:jobId`, `GET /v1/tenants/:tenantId/quickbooks/sync-jobs` |
 | Accounts | `accounts.list()`, `accounts.get()`, `AccountsResource`, `ListAccountsRequest`, `HandrailQuickBooksAccount`, `HandrailQuickBooksAccountListResponse` | `GET /v1/tenants/:tenantId/accounting/accounts`, `GET /v1/tenants/:tenantId/accounting/accounts/:accountId` |
+| Account create/map | `accounts.mapOrCreate()`, `HandrailQuickBooksAccountMapOrCreateRequest`, `HandrailQuickBooksMutationOptions`, `HandrailQuickBooksAccountMappingResult` | `POST /v1/tenants/:tenantId/accounting/accounts/map-or-create` |
+| Journal-entry sync | `journalEntries.sync()`, `JournalEntriesResource`, `HandrailQuickBooksJournalEntrySyncRequest`, `HandrailQuickBooksMutationOptions`, `HandrailQuickBooksJournalEntrySyncResult` | `POST /v1/tenants/:tenantId/accounting/journal-entries/sync` |
 | Parties | `parties.list()`, `parties.get()`, `PartiesResource`, `ListPartiesRequest`, `HandrailQuickBooksParty`, `HandrailQuickBooksPartyListResponse` | `GET /v1/tenants/:tenantId/accounting/parties`, `GET /v1/tenants/:tenantId/accounting/parties/:partyId` |
 | Transactions | `transactions.list()`, `transactions.get()`, `TransactionsResource`, `ListTransactionsRequest`, `HandrailQuickBooksTransaction`, `HandrailQuickBooksTransactionListResponse` | `GET /v1/tenants/:tenantId/accounting/transactions`, `GET /v1/tenants/:tenantId/accounting/transactions/:transactionId` |
 | Transaction lines | `transactionLines.list()`, `transactionLines.search()`, `transactionLines.get()`, `TransactionLinesResource`, `ListTransactionLinesRequest`, `SearchTransactionLinesRequest`, `HandrailQuickBooksTransactionLine`, `HandrailQuickBooksTransactionLineListResponse`, `HandrailQuickBooksTransactionLineSearchResponse`, `HandrailQuickBooksTransactionLineGetResponse` | `GET /v1/tenants/:tenantId/accounting/transaction-lines`, `GET /v1/tenants/:tenantId/accounting/transaction-lines/:transactionLineId` |

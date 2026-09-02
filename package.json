@@ -1,6 +1,6 @@
 {
   "name": "@handrail/quickbooks-node-sdk",
-  "version": "0.1.33",
+  "version": "0.2.0",
   "description": "Internal TypeScript SDK foundation for Handrail QuickBooks integration consumers.",
   "private": true,
   "type": "module",

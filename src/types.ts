@@ -583,6 +583,41 @@ export interface HandrailQuickBooksProviderMetadata {
 
 export type HandrailQuickBooksAccountType = string;
 
+export interface HandrailQuickBooksSourceReference {
+  readonly sourceSystem: string;
+  readonly sourceEntityType: string;
+  readonly sourceEntityId: string;
+}
+
+export interface HandrailQuickBooksLedgerAccountFacts {
+  readonly name: string;
+  readonly accountType: HandrailQuickBooksAccountType;
+  readonly accountSubType?: string;
+  readonly description?: string;
+  readonly active?: boolean;
+}
+
+export interface HandrailQuickBooksAccountMapOrCreateRequest {
+  readonly sourceRef: HandrailQuickBooksSourceReference;
+  readonly account: HandrailQuickBooksLedgerAccountFacts;
+}
+
+export interface HandrailQuickBooksMutationOptions {
+  readonly idempotencyKey: string;
+  readonly signal?: AbortSignal;
+}
+
+export interface HandrailQuickBooksAccountMappingResult {
+  readonly tenantId: string;
+  readonly provider: "quickbooks";
+  readonly providerEnvironment: HandrailQuickBooksProviderEnvironment;
+  readonly providerAccountId: string;
+  readonly sourceRef: HandrailQuickBooksSourceReference;
+  readonly mappingStatus: "created" | "updated" | "unchanged";
+  readonly idempotencyStatus: "created" | "replayed";
+  readonly syncedAt: string;
+}
+
 export interface HandrailQuickBooksAccount extends HandrailQuickBooksProviderMetadata {
   readonly id: string;
   readonly sourceObject: "Account";
@@ -728,6 +763,43 @@ export interface HandrailQuickBooksTransactionLine extends HandrailQuickBooksPro
 }
 
 export type HandrailQuickBooksLedgerPostingType = "Debit" | "Credit";
+
+export interface HandrailQuickBooksJournalEntryLineInput {
+  readonly lineId: string;
+  readonly postingType: HandrailQuickBooksLedgerPostingType;
+  /** Positive decimal amount encoded as a string, with at most two fractional digits. */
+  readonly amount: string;
+  readonly accountSourceRef: HandrailQuickBooksSourceReference;
+  readonly description?: string;
+}
+
+export interface HandrailQuickBooksJournalEntrySyncRequest {
+  readonly sourceRef: HandrailQuickBooksSourceReference;
+  readonly postingDate: string;
+  readonly documentNumber?: string;
+  readonly memo?: string;
+  readonly currencyCode?: string;
+  readonly lines: readonly HandrailQuickBooksJournalEntryLineInput[];
+}
+
+export interface HandrailQuickBooksJournalEntryAccountMapping {
+  readonly lineId: string;
+  readonly providerAccountId: string;
+  readonly sourceRef: HandrailQuickBooksSourceReference;
+  readonly mappingStatus: "mapped";
+}
+
+export interface HandrailQuickBooksJournalEntrySyncResult {
+  readonly tenantId: string;
+  readonly provider: "quickbooks";
+  readonly providerEnvironment: HandrailQuickBooksProviderEnvironment;
+  readonly providerJournalEntryId: string;
+  readonly sourceRef: HandrailQuickBooksSourceReference;
+  readonly syncStatus: "created" | "updated" | "unchanged";
+  readonly idempotencyStatus: "created" | "replayed";
+  readonly accountMappings: readonly HandrailQuickBooksJournalEntryAccountMapping[];
+  readonly syncedAt: string;
+}
 
 export interface HandrailQuickBooksLedgerEntry extends HandrailQuickBooksProviderMetadata {
   readonly id: string;

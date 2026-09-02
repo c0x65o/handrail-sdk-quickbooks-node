@@ -1,6 +1,9 @@
 import {
   parseFutureErpQuickBooksTenantMapJson,
   resolveFutureErpQuickBooksTenantId,
+  HandrailQuickBooksClient,
+  type HandrailQuickBooksAccountMapOrCreateRequest,
+  type HandrailQuickBooksJournalEntrySyncRequest,
   type HandrailQuickBooksFutureErpTenantContext,
   type HandrailQuickBooksFutureErpTenantMap,
   type HandrailQuickBooksFutureErpTenantMapContractId,
@@ -115,6 +118,8 @@ function readDispositionReason(value: HandrailQuickBooksProviderDispositionReaso
       return "Zero-cash deposit/vendor-credit offset";
     case "zero_effect_empty_payment":
       return "Empty zero-effect payment";
+    case "zero_effect_empty_transaction":
+      return "Empty zero-effect transaction";
     case "zero_effect_voided":
       return "Provider-voided zero-effect object";
     default:
@@ -616,6 +621,35 @@ const requestOptions: HandrailQuickBooksRequestOptions = {
   idempotencyKey: "future-erp-sync",
   method: "POST"
 };
+const outboundAccountRequest: HandrailQuickBooksAccountMapOrCreateRequest = {
+  sourceRef: {
+    sourceSystem: "hitcents_erp",
+    sourceEntityType: "ledger_account",
+    sourceEntityId: "cash"
+  },
+  account: { name: "Operating Cash", accountType: "Bank" }
+};
+const outboundJournalRequest: HandrailQuickBooksJournalEntrySyncRequest = {
+  sourceRef: {
+    sourceSystem: "hitcents_erp",
+    sourceEntityType: "journal_entry",
+    sourceEntityId: "journal-1001"
+  },
+  postingDate: "2026-08-22",
+  lines: [
+    { lineId: "debit", postingType: "Debit", amount: "1.00", accountSourceRef: outboundAccountRequest.sourceRef },
+    { lineId: "credit", postingType: "Credit", amount: "1.00", accountSourceRef: outboundAccountRequest.sourceRef }
+  ]
+};
+const outboundClient = new HandrailQuickBooksClient(config);
+const outboundAccountResult = outboundClient.accounts.mapOrCreate(
+  outboundAccountRequest,
+  { idempotencyKey: "account:cash:v1:4d9f" }
+);
+const outboundJournalResult = outboundClient.journalEntries.sync(
+  outboundJournalRequest,
+  { idempotencyKey: "journal:journal-1001:v1:91a2" }
+);
 
 void [
   accountRequest,
@@ -651,6 +685,8 @@ void [
   normalizedResourceMap,
   requestOptions,
   providerDispositionReadModel,
+  outboundAccountResult,
+  outboundJournalResult,
   config,
   futureErpConfig,
   resolvedFutureErpTenantId,

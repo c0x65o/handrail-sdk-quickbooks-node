@@ -1,0 +1,14 @@
+{
+  "tenantId": "future-erp-dev-sandbox-tenant",
+  "provider": "quickbooks",
+  "providerEnvironment": "sandbox",
+  "providerAccountId": "41",
+  "sourceRef": {
+    "sourceSystem": "hitcents_erp",
+    "sourceEntityType": "ledger_account",
+    "sourceEntityId": "cash"
+  },
+  "mappingStatus": "created",
+  "idempotencyStatus": "created",
+  "syncedAt": "2026-08-22T17:00:00.000Z"
+}

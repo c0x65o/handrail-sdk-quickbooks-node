@@ -167,8 +167,13 @@ export class HandrailQuickBooksHttpClient {
     const requestId = body?.requestId ?? response.headers.get("x-request-id") ?? undefined;
     const code = body?.code ?? body?.error ?? `HTTP_${response.status}`;
 
+    const serviceMessage = body?.message ?? body?.error;
+    const message = serviceMessage && !UNSAFE_DETAIL_VALUE_PATTERN.test(serviceMessage)
+      ? serviceMessage
+      : `Handrail QuickBooks request failed with status ${response.status}.`;
+
     return new HandrailQuickBooksError(
-      body?.message ?? body?.error ?? `Handrail QuickBooks request failed with status ${response.status}.`,
+      message,
       {
         code,
         details: sanitizeErrorDetails(body?.details),

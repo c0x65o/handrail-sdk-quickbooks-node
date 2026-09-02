@@ -35,6 +35,7 @@ export { ConnectionsResource } from "./resources/connections.js";
 export { HealthResource } from "./resources/health.js";
 export { ImportBatchesResource } from "./resources/import-batches.js";
 export { ItemsResource } from "./resources/items.js";
+export { JournalEntriesResource } from "./resources/journal-entries.js";
 export { LedgerEntriesResource } from "./resources/ledger-entries.js";
 export { LocationsResource } from "./resources/locations.js";
 export { PartiesResource } from "./resources/parties.js";
@@ -65,6 +66,8 @@ export type {
 } from "./http.js";
 export type {
   HandrailQuickBooksAccount,
+  HandrailQuickBooksAccountMapOrCreateRequest,
+  HandrailQuickBooksAccountMappingResult,
   HandrailQuickBooksAccountListResponse,
   HandrailQuickBooksAccountType,
   HandrailQuickBooksAccountingCurrencyReference,
@@ -96,6 +99,10 @@ export type {
   HandrailQuickBooksImportVolumeSummary,
   HandrailQuickBooksItem,
   HandrailQuickBooksItemListResponse,
+  HandrailQuickBooksJournalEntryAccountMapping,
+  HandrailQuickBooksJournalEntryLineInput,
+  HandrailQuickBooksJournalEntrySyncRequest,
+  HandrailQuickBooksJournalEntrySyncResult,
   HandrailQuickBooksLedgerEntry,
   HandrailQuickBooksLedgerEntryListResponse,
   HandrailQuickBooksLedgerPostingType,
@@ -104,6 +111,7 @@ export type {
   HandrailQuickBooksListResponse,
   HandrailQuickBooksLocation,
   HandrailQuickBooksLocationListResponse,
+  HandrailQuickBooksLedgerAccountFacts,
   HandrailQuickBooksNormalizedCompletenessEvidence,
   HandrailQuickBooksNormalizedCompletenessMap,
   HandrailQuickBooksNormalizedCompletenessResourceFamily,
@@ -112,6 +120,7 @@ export type {
   HandrailQuickBooksNormalizedResourceCompleteness,
   HandrailQuickBooksNormalizedResourceFamilyName,
   HandrailQuickBooksNormalizationWarning,
+  HandrailQuickBooksMutationOptions,
   HandrailQuickBooksNormalizedResourceMap,
   HandrailQuickBooksPageInfo,
   HandrailQuickBooksParty,
@@ -148,6 +157,7 @@ export type {
   HandrailQuickBooksRetryState,
   HandrailQuickBooksSdkConfigInput,
   HandrailQuickBooksServiceEnv,
+  HandrailQuickBooksSourceReference,
   HandrailQuickBooksStartSyncRequest,
   HandrailQuickBooksSyncCheckpoint,
   HandrailQuickBooksSyncCheckpointKind,

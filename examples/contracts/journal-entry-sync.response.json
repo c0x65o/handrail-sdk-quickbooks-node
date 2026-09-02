@@ -1,0 +1,36 @@
+{
+  "tenantId": "future-erp-dev-sandbox-tenant",
+  "provider": "quickbooks",
+  "providerEnvironment": "sandbox",
+  "providerJournalEntryId": "900",
+  "sourceRef": {
+    "sourceSystem": "hitcents_erp",
+    "sourceEntityType": "journal_entry",
+    "sourceEntityId": "journal-1001"
+  },
+  "syncStatus": "created",
+  "idempotencyStatus": "created",
+  "accountMappings": [
+    {
+      "lineId": "debit-cash",
+      "providerAccountId": "41",
+      "sourceRef": {
+        "sourceSystem": "hitcents_erp",
+        "sourceEntityType": "ledger_account",
+        "sourceEntityId": "cash"
+      },
+      "mappingStatus": "mapped"
+    },
+    {
+      "lineId": "credit-revenue",
+      "providerAccountId": "79",
+      "sourceRef": {
+        "sourceSystem": "hitcents_erp",
+        "sourceEntityType": "ledger_account",
+        "sourceEntityId": "revenue"
+      },
+      "mappingStatus": "mapped"
+    }
+  ],
+  "syncedAt": "2026-08-22T17:00:00.000Z"
+}

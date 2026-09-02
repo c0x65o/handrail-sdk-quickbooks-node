@@ -7,6 +7,7 @@ import { ConnectionsResource } from "./resources/connections.js";
 import { HealthResource } from "./resources/health.js";
 import { ImportBatchesResource } from "./resources/import-batches.js";
 import { ItemsResource } from "./resources/items.js";
+import { JournalEntriesResource } from "./resources/journal-entries.js";
 import { LedgerEntriesResource } from "./resources/ledger-entries.js";
 import { LocationsResource } from "./resources/locations.js";
 import { PartiesResource } from "./resources/parties.js";
@@ -32,6 +33,7 @@ export class HandrailQuickBooksClient {
   readonly health: HealthResource;
   readonly importBatches: ImportBatchesResource;
   readonly items: ItemsResource;
+  readonly journalEntries: JournalEntriesResource;
   readonly ledgerEntries: LedgerEntriesResource;
   readonly locations: LocationsResource;
   readonly parties: PartiesResource;
@@ -54,6 +56,7 @@ export class HandrailQuickBooksClient {
     this.checkpoints = new CheckpointsResource(this.config, this.http);
     this.accounts = new AccountsResource(this.config, this.http);
     this.items = new ItemsResource(this.config, this.http);
+    this.journalEntries = new JournalEntriesResource(this.config, this.http);
     this.classes = new ClassesResource(this.config, this.http);
     this.locations = new LocationsResource(this.config, this.http);
     this.parties = new PartiesResource(this.config, this.http);
