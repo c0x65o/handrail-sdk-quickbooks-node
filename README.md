@@ -12,8 +12,8 @@ feeds, and sync jobs remain owned by the central service. ERP Financials owns no
 financial tables and generated financial views.
 
 Service ownership and the Future ERP tenant-mapping contract are documented in the sibling service repo:
-[QuickBooks Production Integration](../handrail-integration-quickbooks/docs/quickbooks-production.md#service-responsibility)
-and [Future ERP QuickBooks Tenant Mapping Contract](../handrail-integration-quickbooks/docs/future-erp-tenant-mapping-contract.md).
+[QuickBooks Production Integration](../handrail-service-quickbooks/docs/quickbooks-production.md#service-responsibility)
+and [Future ERP QuickBooks Tenant Mapping Contract](../handrail-service-quickbooks/docs/future-erp-tenant-mapping-contract.md).
 
 ## Install
 
