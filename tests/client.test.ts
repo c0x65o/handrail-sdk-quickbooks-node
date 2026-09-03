@@ -628,6 +628,7 @@ describe("HandrailQuickBooksClient", () => {
       .sort();
 
     expect(contractFiles).toEqual([
+      "account-map-or-create.response.json",
       "accounts.response.json",
       "cdc-sync-start.response.json",
       "checkpoints.response.json",
@@ -639,6 +640,7 @@ describe("HandrailQuickBooksClient", () => {
       "import-batch.response.json",
       "incremental-sync.response.json",
       "items.response.json",
+      "journal-entry-sync.response.json",
       "ledger-search.response.json",
       "locations.response.json",
       "parties.response.json",
@@ -656,6 +658,44 @@ describe("HandrailQuickBooksClient", () => {
     );
     expect(JSON.stringify(examples)).not.toMatch(unsafeProviderPayloadPattern);
     expect(examples["health.response.json"]).toEqual(contractResponses.health);
+    expect(examples["account-map-or-create.response.json"]).toMatchObject({
+      idempotencyStatus: "created",
+      mappingStatus: "created",
+      provider: "quickbooks",
+      providerAccountId: "41",
+      providerEnvironment: "sandbox",
+      sourceRef: {
+        sourceEntityId: "cash",
+        sourceEntityType: "ledger_account",
+        sourceSystem: "hitcents_erp"
+      },
+      tenantId: "future-erp-dev-sandbox-tenant"
+    });
+    expect(examples["journal-entry-sync.response.json"]).toMatchObject({
+      accountMappings: [
+        {
+          lineId: "debit-cash",
+          mappingStatus: "mapped",
+          providerAccountId: "41"
+        },
+        {
+          lineId: "credit-revenue",
+          mappingStatus: "mapped",
+          providerAccountId: "79"
+        }
+      ],
+      idempotencyStatus: "created",
+      provider: "quickbooks",
+      providerEnvironment: "sandbox",
+      providerJournalEntryId: "900",
+      sourceRef: {
+        sourceEntityId: "journal-1001",
+        sourceEntityType: "journal_entry",
+        sourceSystem: "hitcents_erp"
+      },
+      syncStatus: "created",
+      tenantId: "future-erp-dev-sandbox-tenant"
+    });
     expect(examples["accounts.response.json"]).toMatchObject({
       data: [
         {
