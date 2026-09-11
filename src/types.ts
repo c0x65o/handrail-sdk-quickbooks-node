@@ -730,6 +730,8 @@ export type HandrailQuickBooksTransactionType =
   | "vendor_credit";
 
 export interface HandrailQuickBooksTransaction extends HandrailQuickBooksProviderMetadata {
+  readonly totalTax?: number;
+  readonly taxCalculation?: string;
   readonly id: string;
   readonly sourceObject: HandrailQuickBooksTransactionSourceObject;
   readonly transactionType: HandrailQuickBooksTransactionType;
