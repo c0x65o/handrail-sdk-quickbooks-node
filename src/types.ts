@@ -382,6 +382,8 @@ export interface HandrailQuickBooksNormalizationWarning {
 }
 
 export interface HandrailQuickBooksStartSyncRequest {
+  /** Return admitted batch status immediately instead of awaiting provider import. */
+  readonly responseMode?: "async" | "blocking";
   readonly entities?: readonly HandrailQuickBooksRawImportEntity[];
   /** Inclusive transaction/posting date boundary for historical imports. */
   readonly effectiveThrough?: string;
