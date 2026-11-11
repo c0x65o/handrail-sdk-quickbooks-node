@@ -19,6 +19,7 @@ export interface HandrailQuickBooksRequestOptions {
   readonly method?: "DELETE" | "GET" | "PATCH" | "POST" | "PUT";
   readonly query?: Record<string, boolean | number | string | null | undefined>;
   readonly signal?: AbortSignal;
+  readonly retry?: boolean;
 }
 
 export class HandrailQuickBooksHttpClient {
@@ -31,7 +32,7 @@ export class HandrailQuickBooksHttpClient {
   async request<TResponse>(path: string, options: HandrailQuickBooksRequestOptions = {}) {
     const method = options.method ?? "GET";
     const url = this.buildUrl(path, options.query);
-    const maxAttempts = this.maxAttempts(method, options.idempotencyKey);
+    const maxAttempts = options.retry === false ? 1 : this.maxAttempts(method, options.idempotencyKey);
 
     let lastError: unknown;
     for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {

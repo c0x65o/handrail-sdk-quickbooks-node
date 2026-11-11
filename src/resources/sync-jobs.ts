@@ -20,6 +20,9 @@ export class SyncJobsResource extends HandrailQuickBooksResource {
     const syncJob = await this.http.request<HandrailQuickBooksSyncJobSummary>(this.tenantPath("sync-jobs"), {
       body: request,
       idempotencyKey: options.idempotencyKey,
+      // Older services do not reserve this key before starting provider work.
+      // A timeout can be an admitted import; never replay its POST automatically.
+      retry: false,
       method: "POST"
     });
     return normalizeSyncJobAccountResources(syncJob);
