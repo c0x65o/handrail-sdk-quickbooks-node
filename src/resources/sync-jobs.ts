@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { HandrailQuickBooksResource } from "./base.js";
 import { normalizeQuickBooksAccountResources } from "../account-hierarchy.js";
 import type {
@@ -17,15 +18,26 @@ export interface HandrailQuickBooksSyncOptions {
 
 export class SyncJobsResource extends HandrailQuickBooksResource {
   async start(request: HandrailQuickBooksStartSyncRequest = {}, options: HandrailQuickBooksSyncOptions = {}) {
+    const key = options.idempotencyKey ?? randomUUID();
     const syncJob = await this.http.request<HandrailQuickBooksSyncJobSummary>(this.tenantPath("sync-jobs"), {
       body: request,
-      idempotencyKey: options.idempotencyKey,
+      idempotencyKey: key,
       // Older services do not reserve this key before starting provider work.
       // A timeout can be an admitted import; never replay its POST automatically.
       retry: false,
       method: "POST"
+    }).catch((error: unknown) => {
+      if (error instanceof Error) Object.assign(error, { syncIdempotencyKey: key });
+      throw error;
     });
     return normalizeSyncJobAccountResources(syncJob);
+  }
+
+  /** Read the durable admission after a timeout, without starting another import. */
+  async recoverStart(idempotencyKey: string) {
+    return normalizeSyncJobAccountResources(await this.http.request<HandrailQuickBooksSyncJobSummary>(
+      this.tenantPath(`sync-admissions/${encodeURIComponent(idempotencyKey)}`)
+    ));
   }
 
   async fullSync(

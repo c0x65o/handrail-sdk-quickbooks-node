@@ -18,6 +18,8 @@ export interface HandrailQuickBooksErrorOptions {
 }
 
 export class HandrailQuickBooksError extends Error {
+  /** Stable sync intent key for syncJobs.recoverStart after an ambiguous failure. */
+  syncIdempotencyKey?: string;
   readonly code?: string;
   readonly details?: unknown;
   readonly method?: string;

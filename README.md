@@ -517,3 +517,18 @@ This hardening path must not add direct Intuit OAuth, direct token storage, dire
 - No direct Intuit or QuickBooks API calls from ERP apps, the SDK, or the CLI.
 - No production credentials or checked-in secrets.
 - No service deployment from this SDK repo.
+
+### Recovering sync admission after a timeout
+
+Persist one idempotency key per intended sync and pass it to
+`syncJobs.start(request, { idempotencyKey })`. On an ambiguous timeout, call
+`syncJobs.recoverStart(idempotencyKey)` to read the existing admission without starting
+another import, then poll `syncJobs.get(job.jobId)`. The recovery endpoint requires
+service 0.1.111 or newer. A 404 means no admission was found at that instant; preserve
+the key if explicitly retrying start. Do not generate a new intent key for a network retry.
+
+The SDK still disables automatic POST retries for compatibility with older services
+that ignore keys. When no key is supplied it generates one and exposes it as
+`HandrailQuickBooksError.syncIdempotencyKey` on failure. Persist an explicit key if the
+calling process must recover after restarting. Use a new key only for an intentional
+new job, such as retrying a terminal worker-interrupted failure.

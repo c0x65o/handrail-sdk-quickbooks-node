@@ -247,11 +247,13 @@ export type HandrailQuickBooksSyncJobStatus =
 export type HandrailQuickBooksRetrySource = "raw_import" | "token_custody";
 
 export type HandrailQuickBooksRetryLastErrorCode =
+  | "sync_worker_interrupted"
   | "quickbooks_connection_unavailable"
   | "quickbooks_fetch_failed"
   | "quickbooks_reauthorization_required";
 
 export type HandrailQuickBooksRetryReason =
+  | "worker_interrupted"
   | "connection_unavailable"
   | "provider_request_rejected"
   | "reauthorization_required"
