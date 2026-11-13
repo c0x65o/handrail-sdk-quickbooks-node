@@ -34,4 +34,15 @@ export class ProviderReportsResource extends HandrailQuickBooksResource {
   generalLedger(request: Omit<HandrailQuickBooksProviderReportRequest, "reportName">) {
     return this.get({ ...request, reportName: "general_ledger" });
   }
+  agedReceivables(asOfDate: string) { return this.get({reportName:"aged_receivables",asOfDate,accountingBasis:"accrual"}); }
+  agedReceivableDetail(asOfDate: string) { return this.get({reportName:"aged_receivable_detail",asOfDate,accountingBasis:"accrual"}); }
+  agedPayables(asOfDate: string) { return this.get({reportName:"aged_payables",asOfDate,accountingBasis:"accrual"}); }
+  agedPayableDetail(asOfDate: string) { return this.get({reportName:"aged_payable_detail",asOfDate,accountingBasis:"accrual"}); }
+  /** Open balances are the independently reported aging grand totals, including credits. */
+  async openBalances(asOfDate: string) {
+    const receivables=await this.agedReceivables(asOfDate);
+    const payables=await this.agedPayables(asOfDate);
+    return {asOfDate,receivables,payables};
+  }
+
 }

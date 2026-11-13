@@ -137,6 +137,8 @@ export type {
   HandrailQuickBooksProviderLedgerRow,
   HandrailQuickBooksProviderProfileMetadata,
   HandrailQuickBooksProviderProfileStatus,
+  HandrailQuickBooksAgingParty,
+  HandrailQuickBooksAgingDetail,
   HandrailQuickBooksProviderReportAccountTotal,
   HandrailQuickBooksProviderReportBasis,
   HandrailQuickBooksProviderReportName,

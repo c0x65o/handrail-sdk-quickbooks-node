@@ -832,7 +832,8 @@ export type HandrailQuickBooksProviderReportName =
   | "profit_and_loss"
   | "balance_sheet"
   | "general_ledger"
-  | "cash_flow";
+  | "cash_flow"
+  | "aged_receivables" | "aged_receivable_detail" | "aged_payables" | "aged_payable_detail";
 
 export type HandrailQuickBooksProviderReportBasis = "accrual" | "cash";
 
@@ -908,7 +909,15 @@ export interface HandrailQuickBooksProviderReportRef {
   };
 }
 
+export interface HandrailQuickBooksAgingParty {
+  readonly partySourceId: string; readonly label: string; readonly buckets: Readonly<Record<string,string>>; readonly amount: string;
+}
+export interface HandrailQuickBooksAgingDetail {
+  readonly partySourceId: string; readonly label: string; readonly transactionId: string; readonly transactionType: string; readonly dueDate?: string; readonly amount: string;
+}
 export interface HandrailQuickBooksProviderReportResponse {
+  readonly partyTotals?: readonly HandrailQuickBooksAgingParty[];
+  readonly agingDetails?: readonly HandrailQuickBooksAgingDetail[];
   readonly ok: true;
   readonly tenantId: string;
   readonly realmId?: string;
